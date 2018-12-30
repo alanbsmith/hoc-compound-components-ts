@@ -6,9 +6,9 @@ import Card from "./Card";
 const App: React.SFC = () => {
   return (
     <div>
-      <Card>
+      <Card.Container>
         <Card.Title>hello world</Card.Title>
-      </Card>
+      </Card.Container>
     </div>
   );
 };

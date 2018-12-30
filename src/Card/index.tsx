@@ -4,32 +4,36 @@ interface HocProps {
   foo?: string;
 }
 
-// HOC
-function withHoc<P extends HocProps>(Component: React.ComponentType<P>) {
-  const hocProps = { foo: 'bar' } as HocProps;
-  return (props: any) => <Component {...hocProps} {...props} />
+export interface BaseHocModule {
+  Container: React.FunctionComponent;
+}
+
+export function injectProps(Container: React.FunctionComponent, hocProps: HocProps) {
+  return (props: any) => <Container {...hocProps} {...props} />
+}
+
+export function withHoc<T extends BaseHocModule>(Module: T): T {
+  const hocProps: HocProps = { foo: 'bar' };
+  const {Container, ...rest} = Module;
+
+  return {
+    Container: injectProps(Container, hocProps),
+    ...rest
+  } as T
 };
 
-interface CardSFC<T> extends React.SFC<T> {
-  Title: React.SFC;
-}
-
-interface CardProps extends React.HTMLProps<HTMLDivElement> {
-  Title: React.SFC;
-}
-
-// Parent Component
-const Card: CardSFC<CardProps> = (props) => {
-  const { children, ...rest } = props;
+export type CardContainerInterface = React.FunctionComponent<React.HTMLProps<HTMLDivElement>>;
+export const CardContainerComponent: CardContainerInterface = ({ children, ...props }) => {
   return (
-    <div className="card" {...rest}>
+    <div className="card" {...props}>
       {children}
     </div>
   );
 };
 
-// Child Component
-const Title: React.SFC<React.HTMLProps<HTMLHeadingElement>> = ({ children, ...props }) => {
+export type CardTitleProps = React.HTMLProps<HTMLHeadingElement>
+export type CardTitleInterface = React.FunctionComponent<React.HTMLProps<HTMLHeadingElement>>;
+export const CardTitleComponent: CardTitleInterface = ({ children, ...props }) => {
   return (
     <h1 className="card-title" {...props}>
       {children}
@@ -37,6 +41,13 @@ const Title: React.SFC<React.HTMLProps<HTMLHeadingElement>> = ({ children, ...pr
   );
 };
 
-Card.Title = Title;
+export interface CardModuleInterface {
+  Container: CardContainerInterface;
+  Title: CardTitleInterface;
+};
+export const CardModule: CardModuleInterface = {
+  Container: CardContainerComponent,
+  Title: CardTitleComponent,
+}
 
-export default withHoc<Card>(Card);
+export default withHoc(CardModule);
